@@ -2,8 +2,8 @@
 // Created by book on 24-10-22.
 //
 
-#ifndef SIMPLEFOC_LINUX_WIRE_H
-#define SIMPLEFOC_LINUX_WIRE_H
+#ifndef __WIRE_H
+#define __WIRE_H
 
 #include <cstdint>
 #include <wiringPi.h>
@@ -61,4 +61,4 @@ public:
 
 extern TwoWire Wire;
 
-#endif //SIMPLEFOC_LINUX_WIRE_H
+#endif //__WIRE_H

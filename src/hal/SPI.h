@@ -2,8 +2,8 @@
 // Created by book on 24-10-22.
 //
 
-#ifndef SIMPLEFOC_LINUX_SPI_H
-#define SIMPLEFOC_LINUX_SPI_H
+#ifndef __SPI_H
+#define __SPI_H
 #include <wiringPiSPI.h>
 #include <stdint.h>
 #include "wiringShift.h"
@@ -70,4 +70,4 @@ public:
 
 extern SPIClass SPI;
 
-#endif //SIMPLEFOC_LINUX_SPI_H
+#endif //__SPI_H

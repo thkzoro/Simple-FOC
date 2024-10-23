@@ -2,8 +2,8 @@
 // Created by book on 24-10-22.
 //
 
-#ifndef SIMPLEFOC_LINUX_ASTRING_H
-#define SIMPLEFOC_LINUX_ASTRING_H
+#ifndef __ASTRING_H
+#define __ASTRING_H
 
 class String : public std::string {
 public:
@@ -31,4 +31,4 @@ public:
     __FlashStringHelper(const char* str) : std::string(str) {}
 };
 
-#endif //SIMPLEFOC_LINUX_ASTRING_H
+#endif //__ASTRING_H

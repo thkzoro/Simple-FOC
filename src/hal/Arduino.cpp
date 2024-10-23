@@ -1,6 +1,7 @@
 #include "Arduino.h"
 #include <chrono>
 
+ASerial Serial;
 int digitalPinToInterrupt(int pin) {
     // 在 wiringPi 中，GPIO 编号与数字引脚一致
     return pin;
@@ -31,4 +32,12 @@ unsigned long pulseIn(int pin, int value, unsigned long timeout) {
     }
 
     return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+}
+
+void noInterrupts() {
+
+}
+
+void interrupts() {
+
 }

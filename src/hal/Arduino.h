@@ -7,10 +7,10 @@
 #include <cctype>
 
 #include "wiringPi.h"
-#include "print.h"
-#include "stream.h"
+#include "APrint.h"
+#include "AStream.h"
 #include "Astring.h"
-
+#include "ASerial.h"
 
 
 
@@ -35,11 +35,9 @@ int digitalPinToInterrupt(int pin);
 
 void attachInterrupt(int pin, void (*ISR)(void), int mode);
 
-void noInterrupts() {
-}
+void noInterrupts();
 
-void interrupts() {
-}
+void interrupts();
 
 unsigned long pulseIn(int pin, int value, unsigned long timeout);
 #endif //__ARDUINO_H

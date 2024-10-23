@@ -1,9 +1,6 @@
-//
-// Created by book on 24-10-22.
-//
+#ifndef __PRINT_H
+#define __PRINT_H
 
-#ifndef SIMPLEFOC_LINUX_PRINT_H
-#define SIMPLEFOC_LINUX_PRINT_H
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -124,23 +121,6 @@ protected:
     static const int OCT = 8;
     static const int BIN = 2;
 };
-// 模拟 Serial 对象
-class SerialClass : public Print {
-public:
-    void begin(unsigned long) {} // 模拟 begin 函数，实际上什么也不做
-
-    virtual size_t write(uint8_t c) override {
-        std::cout.put(c);
-        return 1;
-    }
-
-    virtual size_t write(const uint8_t *buffer, size_t size) override {
-        std::cout.write((const char*)buffer, size);
-        return size;
-    }
-};
-
-extern SerialClass Serial;
 
 
 #define F(string_literal) (reinterpret_cast<const __FlashStringHelper *>(PSTR(string_literal)))
@@ -150,4 +130,4 @@ extern SerialClass Serial;
 // 模拟 StringSumHelper
 typedef String StringSumHelper;
 
-#endif //SIMPLEFOC_LINUX_PRINT_H
+#endif //__PRINT_H

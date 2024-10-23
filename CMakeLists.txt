@@ -17,26 +17,22 @@ file(GLOB_RECURSE SOURCES
 )
 # 创建库
 add_library(simplefoc STATIC ${SOURCES})
-# 设置输出目录
-set_target_properties(simplefoc PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+
+#添加链接库目录
+link_directories(
+        thirdparty/winirgPi
+        cmake-build-debug-aarch64
 )
-# 添加示例可执行文件（如果有的话）
-#add_executable(simplefoc_example examples/simple_example.cpp)
-#target_link_libraries(simplefoc_example simplefoc)
-# 安装规则
-install(TARGETS simplefoc
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
+# 添加示例可执行文件
+add_executable(simplefocmini_openloop
+        examples_linux/hardware_specific_examples/SimpleFOCMini/open_loop/open_loop.cpp)
+target_link_libraries(simplefocmini_openloop
+        wiringPi
+        crypt
+        simplefoc
 )
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/
-        DESTINATION include/simplefoc
-        FILES_MATCHING PATTERN "*.h"
-)
+
 # 添加编译选项
 #target_compile_options(simplefoc PRIVATE -Wall -Wextra -O2)
 # 如果需要链接其他库（如实时库），可以添加：
 # target_link_libraries(simplefoc rt)
-# 如果需要特定的编译定义，可以添加：
-# target_compile_definitions(simplefoc PRIVATE MY_DEFINE=1)
