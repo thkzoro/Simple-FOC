@@ -1,133 +1,48 @@
 #ifndef __PRINT_H
 #define __PRINT_H
 
-#include <iostream>
-#include <iomanip>
-#include <sstream>
-#include <string.h>
-#include <stdint.h>
-#include "Astring.h"
+#include <cstddef>
+#include <cstdint>
+#include "AString.h"
 
 class Print {
 public:
+    virtual ~Print() {}
+
     virtual size_t write(uint8_t) = 0;
-    virtual size_t write(const uint8_t *buffer, size_t size) = 0;
+    virtual size_t write(const char *str);
+    virtual size_t write(const uint8_t *buffer, size_t size);
 
-    size_t print(const char* str) {
-        return write((const uint8_t*)str, strlen(str));
-    }
+    size_t print(const char[]);
+    size_t print(char);
+    size_t print(unsigned char, int = DEC);
+    size_t print(int, int = DEC);
+    size_t print(unsigned int, int = DEC);
+    size_t print(long, int = DEC);
+    size_t print(unsigned long, int = DEC);
+    size_t print(double, int = 2);
+    size_t print(const __FlashStringHelper *str);
 
-    size_t print(char c) {
-        return write((uint8_t)c);
-    }
-
-    size_t print(unsigned char num, int base = DEC) {
-        return print((unsigned long)num, base);
-    }
-
-    size_t print(int num, int base = DEC) {
-        return print((long)num, base);
-    }
-
-    size_t print(unsigned int num, int base = DEC) {
-        return print((unsigned long)num, base);
-    }
-
-    size_t print(long num, int base = DEC) {
-        if (base == 0) {
-            return write(num);
-        } else {
-            return print(std::to_string(num).c_str());
-        }
-    }
-
-    size_t print(unsigned long num, int base = DEC) {
-        if (base == 0) {
-            return write(num);
-        } else {
-            return print(std::to_string(num).c_str());
-        }
-    }
-
-    size_t print(double num, int digits = 2) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(digits) << num;
-        return print(oss.str().c_str());
-    }
-
-    size_t print(const __FlashStringHelper *ifsh) {
-        return print(ifsh->c_str());
-    }
-
-    size_t println(const char* str) {
-        size_t n = print(str);
-        n += println();
-        return n;
-    }
-
-    size_t println(char c) {
-        size_t n = print(c);
-        n += println();
-        return n;
-    }
-
-    size_t println(unsigned char num, int base = DEC) {
-        size_t n = print(num, base);
-        n += println();
-        return n;
-    }
-
-    size_t println(int num, int base = DEC) {
-        size_t n = print(num, base);
-        n += println();
-        return n;
-    }
-
-    size_t println(unsigned int num, int base = DEC) {
-        size_t n = print(num, base);
-        n += println();
-        return n;
-    }
-
-    size_t println(long num, int base = DEC) {
-        size_t n = print(num, base);
-        n += println();
-        return n;
-    }
-
-    size_t println(unsigned long num, int base = DEC) {
-        size_t n = print(num, base);
-        n += println();
-        return n;
-    }
-
-    size_t println(double num, int digits = 2) {
-        size_t n = print(num, digits);
-        n += println();
-        return n;
-    }
-
-    size_t println(const __FlashStringHelper *ifsh) {
-        return println(ifsh->c_str());
-    }
-
-    size_t println(void) {
-        return write((uint8_t)'\n');
-    }
+    size_t println(const char[]);
+    size_t println(char);
+    size_t println(unsigned char, int = DEC);
+    size_t println(int, int = DEC);
+    size_t println(unsigned int, int = DEC);
+    size_t println(long, int = DEC);
+    size_t println(unsigned long, int = DEC);
+    size_t println(double, int = 2);
+    size_t println(void);
+    size_t println(const __FlashStringHelper *str);
 
 protected:
     static const int DEC = 10;
     static const int HEX = 16;
     static const int OCT = 8;
     static const int BIN = 2;
+
+private:
+    size_t printNumber(unsigned long, uint8_t);
+    size_t printFloat(double, uint8_t);
 };
-
-
-#define F(string_literal) (reinterpret_cast<const __FlashStringHelper *>(PSTR(string_literal)))
-#define PSTR(str) (str)
-
-
-// 模拟 StringSumHelper
-typedef String StringSumHelper;
 
 #endif //__PRINT_H

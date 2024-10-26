@@ -1,64 +1,47 @@
 #ifndef __ASERIAL_H
 #define __ASERIAL_H
-#include "wiringSerial.h"
-
-#include <cstdint>
 #include <string>
+#include <termios.h>
+#include <functional>
 #include "AStream.h"
 
-class ASerial : public Stream {
-private:
-    int fd;
-    int baudRate;
-    std::string device;
-
+class ASerialPort : public Stream {
 public:
-    ASerial() : fd(-1), baudRate(115200), device("/dev/ttyAMA0") {}
+    ASerialPort();
+    virtual ~ASerialPort();
+    // 初始化和关闭串口
+    bool begin(unsigned long baud);
+    void end();
+    // 实现 Stream 的虚函数
+    virtual int available() override;
+    virtual int read() override;
+    virtual int peek() override;
+    virtual void flush() override;
+    // 实现 Print 的虚函数
+    virtual size_t write(uint8_t byte) override;
 
-    bool begin(unsigned long baud) {
-        baudRate = baud;
-        fd = serialOpen(device.c_str(), baudRate);
-        return (fd >= 0);
-    }
+    // 额外的写入方法
+    size_t write(const char* str);
+    size_t write(const uint8_t* buffer, size_t size);
+    // 设置串口参数
+    bool setBaudRate(unsigned long baud);
+    bool setDataBits(int bits);
+    bool setParity(char parity);  // 'N', 'E', 'O'
+    bool setStopBits(int bits);
+    // 状态查询
+    bool isOpen() const { return fd >= 0; }
 
-    void end() {
-        if (fd >= 0) {
-            serialClose(fd);
-            fd = -1;
-        }
-    }
+private:
+    int fd;              // 文件描述符
+    int baudRate;        // 波特率
+    int dataBits;        // 数据位
+    char parity;         // 校验位
+    int stopBits;        // 停止位
 
-    bool available() {
-        return (fd >= 0) ? serialDataAvail(fd) : 0;
-    }
-
-    int read() {
-        return (fd >= 0) ? serialGetchar(fd) : -1;
-    }
-
-    size_t write(uint8_t c) {
-        if (fd >= 0) {
-            serialPutchar(fd, c);
-            return 1;
-        }
-        return 0;
-    }
-
-    size_t write(const uint8_t *buffer, size_t size) {
-        if (fd >= 0) {
-            for (size_t i = 0; i < size; i++) {
-                serialPutchar(fd, buffer[i]);
-            }
-            return size;
-        }
-        return 0;
-    }
-
-    void setDevice(const std::string& dev) {
-        device = dev;
-    }
+    bool configurePort();
+    void clearError();
 };
 
-extern ASerial Serial;
+extern ASerialPort Serial;
 
 #endif //__ASERIAL_H

@@ -1,62 +1,49 @@
-//
-// Created by book on 24-10-22.
-//
-
 #ifndef __WIRE_H
 #define __WIRE_H
 
+#include <vector>
+#include <functional>
 #include <cstdint>
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
-#include <unistd.h>
+#include <cstddef>
 
 class TwoWire {
-private:
-    int fd;
-    uint8_t address;
-
 public:
-    TwoWire() : fd(-1), address(0) {}
+    TwoWire();
+    ~TwoWire();
+    // 基本I2C操作
+    void begin();
+    void end();
+    void beginTransmission(int address);
+    uint8_t endTransmission(bool sendStop = true);
+    uint8_t requestFrom(int address, int quantity, bool sendStop = true);
 
-    void begin() {
-        wiringPiSetup();
-    }
+    // 数据读写
+    size_t write(uint8_t data);
+    size_t write(const uint8_t* data, size_t quantity);
+    int available();
+    int read();
 
-    void beginTransmission(uint8_t addr) {
-        address = addr;
-        if (fd != -1) {
-            close(fd);
-        }
-        fd = wiringPiI2CSetup(address);
-    }
+    // 时钟和超时设置
+    void setClock(uint32_t frequency);
+    void setWireTimeout(uint32_t timeout = 25000, bool reset_with_timeout = false);
+    bool getWireTimeoutFlag();
+    void clearWireTimeoutFlag();
 
-    uint8_t endTransmission(bool stop = true) {
-        return (fd != -1) ? 0 : 4;
-    }
+    // 回调函数设置
+    void onReceive(std::function<void(int)> handler);
+    void onRequest(std::function<void()> handler);
+private:
+    int fd;                     // I2C设备文件描述符
+    int currentAddress;         // 当前I2C设备地址
+    std::vector<uint8_t> txBuffer;  // 发送缓冲区
+    std::vector<uint8_t> rxBuffer;  // 接收缓冲区
+    size_t rxIndex;            // 接收缓冲区当前读取位置
 
-    uint8_t requestFrom(uint8_t addr, uint8_t quantity) {
-        // 简化实现，实际使用时可能需要更复杂的逻辑
-        return quantity;
-    }
+    unsigned long timeout;      // 超时时间设置
+    bool timeoutFlag;          // 超时标志
 
-    size_t write(uint8_t data) {
-        if (fd != -1) {
-            return (wiringPiI2CWrite(fd, data) != -1) ? 1 : 0;
-        }
-        return 0;
-    }
-
-    int available() {
-        // 简化实现
-        return 1;
-    }
-
-    int read() {
-        if (fd != -1) {
-            return wiringPiI2CRead(fd);
-        }
-        return -1;
-    }
+    std::function<void(int)> receiveHandler;    // 接收回调函数
+    std::function<void()> requestHandler;       // 请求回调函数
 };
 
 extern TwoWire Wire;
