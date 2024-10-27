@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-FileCopyrightText: 2017-2021 Bartosz Golaszewski <bartekgola@gmail.com>
+
+prefix=/home/book/work/Simple-FOC/thirdparty/libgpiod-2.2
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libgpiodcxx
+Description: C++ bindings for libgpiod
+URL: 
+Version: 2.2
+Libs: -L${libdir} -lgpiodcxx
+Cflags: -I${includedir}

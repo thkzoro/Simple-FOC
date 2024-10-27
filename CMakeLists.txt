@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 # 设置项目名称和语言
 project(SimpleFOC_Linux VERSION 1.0 LANGUAGES CXX)
 # 设置C++标准
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # 添加包含目录
 include_directories(thirdparty/libgpiod-2.2/include)
@@ -26,9 +26,11 @@ link_directories(
 # 添加示例可执行文件
 add_executable(simplefocmini_openloop
         examples_linux/hardware_specific_examples/SimpleFOCMini/open_loop/open_loop.cpp)
+
 target_link_libraries(simplefocmini_openloop
         simplefoc
-        gpiod
+        libgpiodcxx.a
+        libgpiod.a
 )
 
 # 添加编译选项

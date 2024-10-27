@@ -11,6 +11,7 @@
 #include <cstring>
 #include "ASerial.h"
 #include "GPIO.h"
+#include "PWM.h"
 #include "ATime.h"
 
 #define isDigit isdigit

@@ -14,9 +14,8 @@
 
 
 // BLDC motor & driver instance
-BLDCMotor motor = BLDCMotor(11);
-// BLDCDriver3PWM driver = BLDCDriver3PWM(11, 10, 9, 8); // mini v1.0
-BLDCDriver3PWM driver = BLDCDriver3PWM(9, 10, 11, 12); // mini v1.1
+BLDCMotor motor = BLDCMotor(7);
+BLDCDriver3PWM driver = BLDCDriver3PWM(0, 1, 7, 22); // mini v1.1
 
 // instantiate the commander
 Commander command = Commander(Serial);
@@ -30,10 +29,8 @@ void setup() {
   SimpleFOCDebug::enable(&Serial);
 
   // if SimpleFOCMini is stacked in arduino headers
-  // on pins 12,11,10,9,8 
-  // pin 12 is used as ground
-  pinMode(12,OUTPUT);
-  pinMode(12,LOW);
+  pinMode(22,OUTPUT);
+  digitalWrite(22,LOW);
 
   // driver config
   // power supply voltage [V]
@@ -65,7 +62,7 @@ void setup() {
   Serial.println(F("Motor ready."));
   Serial.println(F("Set the target velocity using serial terminal:"));
   
-  motor.target = 1; //initial target velocity 1 rad/s
+  motor.target = 100;//initial target velocity 1 rad/s
   Serial.println("Target velocity: 1 rad/s");
   Serial.println("Voltage limit 2V");
   _delay(1000);
