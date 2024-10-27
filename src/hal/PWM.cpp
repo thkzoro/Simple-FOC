@@ -4,7 +4,7 @@
 #include <memory>
 #include "PWM.h"
 
-constexpr int PWM_PERIOD_NS = 1000000;
+constexpr int PWM_PERIOD_NS = 20000; //50KHz
  // first 是 chip，second 是 channel
  ChipChannel PWMManager::getChipChannel(int pin) {
      switch (pin) {

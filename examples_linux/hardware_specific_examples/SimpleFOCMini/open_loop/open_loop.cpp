@@ -62,7 +62,7 @@ void setup() {
   Serial.println(F("Motor ready."));
   Serial.println(F("Set the target velocity using serial terminal:"));
   
-  motor.target = 100;//initial target velocity 1 rad/s
+  motor.target = 5;//initial target velocity 1 rad/s
   Serial.println("Target velocity: 1 rad/s");
   Serial.println("Voltage limit 2V");
   _delay(1000);
