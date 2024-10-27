@@ -15,7 +15,7 @@ TwoWire::~TwoWire() {
 }
 void TwoWire::begin() {
     // 打开I2C设备
-    fd = open("/dev/i2c-1", O_RDWR);
+    fd = open("/dev/i2c-0", O_RDWR);
     if (fd < 0) {
         // 处理错误
         perror("Failed to open I2C device");

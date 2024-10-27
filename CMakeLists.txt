@@ -27,7 +27,15 @@ link_directories(
 add_executable(simplefocmini_openloop
         examples_linux/hardware_specific_examples/SimpleFOCMini/open_loop/open_loop.cpp)
 
+add_executable(as5600_position_control
+        examples_linux/hardware_specific_examples/SimpleFOCMini/position_control/as5600_position_control.cpp)
+
 target_link_libraries(simplefocmini_openloop
+        simplefoc
+        libgpiodcxx.a
+        libgpiod.a
+)
+target_link_libraries(as5600_position_control
         simplefoc
         libgpiodcxx.a
         libgpiod.a
