@@ -93,6 +93,7 @@ int main() {
   setup();
   while (1) {
     loop();
+    delay(1);
   }
   return 0;
 }

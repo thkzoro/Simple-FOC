@@ -17,6 +17,10 @@ public:
         return instance;
     }
 
+    ~GPIOManager() {
+        m_gpios.clear();
+    }
+
     void addGPIO(int pin, std::shared_ptr<GPIO> &gpio) {
         m_gpios[pin] = gpio;
     }
@@ -41,19 +45,22 @@ private:
 
     gpiod::chip m_chip;
     std::unordered_map<int, std::shared_ptr<GPIO>> m_gpios;
-
 };
-
 
 class GPIO {
 public:
-    GPIO(int pin, int mode): m_pin(pin), m_mode(mode) {
+    GPIO(int pin, int mode) :
+        m_pin(pin), m_mode(mode) {
         auto builder = GPIOManager::getInstance().getChip().prepare_request();
         builder.set_consumer("gpio_manager");
         builder.add_line_settings(m_pin, gpiod::line_settings().set_direction(
                 m_mode == INPUT ?gpiod::line::direction::INPUT : gpiod::line::direction::OUTPUT));
          auto request = builder.do_request();
         m_request = std::make_shared<gpiod::line_request>(std::move(request));
+    }
+
+    ~GPIO() {
+        m_request->release();
     }
 
     int getPin() const {
@@ -66,7 +73,6 @@ public:
         }
         m_request->set_value(m_pin, value == HIGH ? gpiod::line::value::ACTIVE : gpiod::line::value::INACTIVE);
     }
-
 
 private:
     int m_pin;

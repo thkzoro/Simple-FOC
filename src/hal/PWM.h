@@ -26,6 +26,7 @@ public:
 
 private:
     PWMManager() = default;
+    ~PWMManager();
     PWMManager(const PWMManager&) = delete;
     PWMManager& operator=(const PWMManager&) = delete;
 
@@ -35,12 +36,13 @@ private:
 class PWM {
 public:
     PWM(int pin);
-    ~PWM() {}
+    ~PWM();
 
     void set_duty_cycle(double duty_cycle_percent);
 
 private:
     std::ofstream m_f_duty_cycle;
+    std::ofstream m_f_enable;
 };
 
 

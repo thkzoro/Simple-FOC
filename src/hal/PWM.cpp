@@ -5,6 +5,11 @@
 #include "PWM.h"
 
 constexpr int PWM_PERIOD_NS = 20000; //50KHz
+
+PWMManager::~PWMManager() {
+    m_pwms.clear();
+}
+
  // first 是 chip，second 是 channel
  ChipChannel PWMManager::getChipChannel(int pin) {
      switch (pin) {
@@ -27,20 +32,41 @@ PWM::PWM(int pin){
     auto channel = chip_channel.second;
     std::string base_path = "/sys/class/pwm/pwmchip" + std::to_string(chip);
     std::ofstream f_export(base_path + "/export");
-    f_export << channel;
-    f_export.close();
+    if (f_export.is_open()) {
+        f_export << channel;
+        f_export.flush();
+        f_export.close();
+    }
 
     auto pwm_path = base_path + "/pwm" + std::to_string(channel);
     std::ofstream f_period(pwm_path + "/period");
-    f_period << std::to_string(PWM_PERIOD_NS);
-    f_period.close();
+    if (f_period.is_open()) {
+        f_period << std::to_string(PWM_PERIOD_NS);
+        f_period.flush();
+        f_period.close();
+    }
 
     m_f_duty_cycle.open(pwm_path + "/duty_cycle");
-    m_f_duty_cycle << "0";
+    if (m_f_duty_cycle.is_open()) {
+        m_f_duty_cycle << 0;
+        m_f_duty_cycle.flush();
+    }
 
-    std::ofstream f_enable(pwm_path + "/enable");
-    f_enable << "1";
-    f_enable.close();
+    m_f_enable.open(pwm_path + "/enable");
+    if (m_f_enable.is_open()) {
+        m_f_enable << 1;
+        m_f_enable.flush();
+    }
+}
+
+PWM::~PWM() {
+    m_f_duty_cycle << "0";
+    m_f_duty_cycle.flush();
+    m_f_duty_cycle.close();
+
+    m_f_enable << "0";
+    m_f_enable.flush();
+    m_f_enable.close();
 }
 
 void PWM::set_duty_cycle(double duty_cycle_percent) {
@@ -50,6 +76,8 @@ void PWM::set_duty_cycle(double duty_cycle_percent) {
     m_f_duty_cycle << duty_cycle_ns;
     m_f_duty_cycle.flush();
 }
+
+
 
 void analogWrite(unsigned int pin, int value) {
     auto pwm = PWMManager::getInstance().getPWM(pin);
