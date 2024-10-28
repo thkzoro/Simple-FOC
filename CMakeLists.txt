@@ -23,24 +23,24 @@ link_directories(
         thirdparty/libgpiod-2.2/lib
         cmake-build-debug-aarch64
 )
-# 添加示例可执行文件
-add_executable(simplefocmini_openloop
+# 定义公共库
+set(COMMON_LIBS simplefoc libgpiodcxx.a libgpiod.a)
+
+# 定义一个函数来简化添加可执行文件和链接库的过程
+function(add_example name source_file)
+    add_executable(${name} ${source_file})
+    target_link_libraries(${name} ${COMMON_LIBS})
+endfunction()
+
+
+add_example(simplefocmini_openloop
         examples_linux/hardware_specific_examples/SimpleFOCMini/open_loop/open_loop.cpp)
 
-add_executable(as5600_position_control
+add_example(as5600_position_control
         examples_linux/hardware_specific_examples/SimpleFOCMini/position_control/as5600_position_control.cpp)
 
-target_link_libraries(simplefocmini_openloop
-        simplefoc
-        libgpiodcxx.a
-        libgpiod.a
-)
-target_link_libraries(as5600_position_control
-        simplefoc
-        libgpiodcxx.a
-        libgpiod.a
-)
-
+add_example(open_loop_velocity_example
+        examples_linux/motion_control/open_loop_motor_control/open_loop_velocity_example/open_loop_velocity_example.cpp)
 # 添加编译选项
 #target_compile_options(simplefoc PRIVATE -Wall -Wextra -O2)
 # 如果需要链接其他库（如实时库），可以添加：
