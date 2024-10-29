@@ -41,6 +41,22 @@ add_example(as5600_position_control
 
 add_example(open_loop_velocity_example
         examples_linux/motion_control/open_loop_motor_control/open_loop_velocity_example/open_loop_velocity_example.cpp)
+
+add_example(open_loop_position_example
+        examples_linux/motion_control/open_loop_motor_control/open_loop_position_example/open_loop_position_example.cpp)
+
+add_example(angle_control
+        examples_linux/motion_control/position_motion_control/magnetic_sensor/angle_control/angle_control.cpp)
+
+add_example(velocity_control
+        examples_linux/motion_control/velocity_motion_control/magnetic_sensor/velocity_control/velocity_control.cpp)
+
+#utils
+add_example(find_sensor_offset_and_direction
+        examples_linux/utils/calibration/find_sensor_offset_and_direction/find_sensor_offset_and_direction.cpp)
+
+add_example(magnetic_sensor_i2c_example
+        examples_linux/utils/sensor_test/magnetic_sensors/magnetic_sensor_i2c/magnetic_sensor_i2c_example/magnetic_sensor_i2c_example.cpp)
 # 添加编译选项
 #target_compile_options(simplefoc PRIVATE -Wall -Wextra -O2)
 # 如果需要链接其他库（如实时库），可以添加：
