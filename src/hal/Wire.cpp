@@ -1,94 +1,126 @@
 #include "Wire.h"
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/ioctl.h>
-#include <linux/i2c-dev.h>
-#include <string.h>
-#include <cstdio>
+#include <stdexcept>
+#include <system_error>
 
 TwoWire Wire;
 
-TwoWire::TwoWire() : fd(-1), currentAddress(0), rxIndex(0), timeout(0), timeoutFlag(false) {
-}
+TwoWire::TwoWire()
+        : m_fd(-1), m_address(0), m_tx_buffer_index(0), m_rx_buffer_index(0), m_rx_buffer_length(0),
+          m_timeout(0), m_reset_on_timeout(false), m_timeout_flag(false) {}
+
 TwoWire::~TwoWire() {
     end();
 }
+
 void TwoWire::begin() {
     // 打开I2C设备
-    fd = open("/dev/i2c-0", O_RDWR);
-    if (fd < 0) {
-        // 处理错误
-        perror("Failed to open I2C device");
+    m_fd = open("/dev/i2c-0", O_RDWR);
+    if (m_fd < 0) {
+        throw std::system_error(errno, std::system_category(), "Failed to open I2C device");
     }
 }
-void TwoWire::end() {
-    if (fd >= 0) {
-        close(fd);
-        fd = -1;
-    }
-}
-void TwoWire::beginTransmission(int address) {
-    currentAddress = address;
-    txBuffer.clear();
-}
-uint8_t TwoWire::endTransmission(bool sendStop) {
-    if (fd < 0) return 4;  // 错误：总线未初始化
-    if (ioctl(fd, I2C_SLAVE, currentAddress) < 0) {
-        return 2;  // 错误：地址设置失败
-    }
-    if (::write(fd, txBuffer.data(), txBuffer.size()) != static_cast<ssize_t>(txBuffer.size())) {
-        return 4;  // 错误：数据写入失败
-    }
-    return 0;  // 成功
-}
-uint8_t TwoWire::requestFrom(int address, int quantity, bool sendStop) {
-    if (fd < 0) return 0;
-    if (ioctl(fd, I2C_SLAVE, address) < 0) {
-        return 0;
-    }
-    rxBuffer.resize(quantity);
-    ssize_t count = ::read(fd, rxBuffer.data(), quantity);
 
-    if (count < 0) {
-        rxBuffer.clear();
-        return 0;
-    }
-    rxIndex = 0;
-    return count;
+void TwoWire::begin(uint8_t address) {
+    begin();
+    m_address = address;
 }
+
+void TwoWire::end() {
+    if (m_fd >= 0) {
+        close(m_fd);
+        m_fd = -1;
+    }
+}
+
+uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, bool stop) {
+    if (ioctl(m_fd, I2C_SLAVE, address) < 0) {
+        throw std::runtime_error("Failed to set I2C slave address");
+    }
+
+    // 读取数据到接收缓冲区
+    int bytes_read = ::read(m_fd, m_rx_buffer.data(), std::min(quantity, static_cast<uint8_t>(BUFFER_SIZE)));
+
+    if (bytes_read < 0) {
+        throw std::system_error(errno, std::system_category(), "Failed to read from I2C device");
+    }
+
+    m_rx_buffer_index = 0;
+    m_rx_buffer_length = bytes_read;
+
+    return bytes_read;
+}
+
+void TwoWire::beginTransmission(uint8_t address) {
+    m_address = address;
+    m_tx_buffer_index = 0;
+}
+
+uint8_t TwoWire::endTransmission(bool stop) {
+    if (ioctl(m_fd, I2C_SLAVE, m_address) < 0) {
+        return 4; // 其他错误
+    }
+
+    if (::write(m_fd, m_tx_buffer.data(), m_tx_buffer_index) != m_tx_buffer_index) {
+        return 4; // 其他错误
+    }
+
+    return 0; // 成功
+}
+
 size_t TwoWire::write(uint8_t data) {
-    txBuffer.push_back(data);
-    return 1;
-}
-size_t TwoWire::write(const uint8_t* data, size_t quantity) {
-    txBuffer.insert(txBuffer.end(), data, data + quantity);
-    return quantity;
-}
-int TwoWire::available() {
-    return rxBuffer.size() - rxIndex;
-}
-int TwoWire::read() {
-    if (rxIndex >= rxBuffer.size()) {
-        return -1;
+    if (m_tx_buffer_index < BUFFER_SIZE) {
+        m_tx_buffer[m_tx_buffer_index++] = data;
+        return 1;
     }
-    return rxBuffer[rxIndex++];
+    return 0;
 }
-void TwoWire::setClock(uint32_t frequency) {
-    // Linux I2C驱动通常会自动处理时钟频率
-    // 如果需要可以通过ioctl实现具体控制
+
+size_t TwoWire::write(const uint8_t* data, size_t quantity) {
+    size_t written = 0;
+    while (written < quantity && m_tx_buffer_index < BUFFER_SIZE) {
+        m_tx_buffer[m_tx_buffer_index++] = data[written++];
+    }
+    return written;
 }
-void TwoWire::setWireTimeout(uint32_t timeoutValue, bool reset_with_timeout) {
-    timeout = timeoutValue;
+
+int TwoWire::available() {
+    return m_rx_buffer_length - m_rx_buffer_index;
 }
+
+int TwoWire::read() {
+    if (m_rx_buffer_index < m_rx_buffer_length) {
+        return m_rx_buffer[m_rx_buffer_index++];
+    }
+    return -1;
+}
+
+void TwoWire::setClock(uint32_t clock) {
+    // I2C时钟设置通常由Linux内核处理
+    // 此函数可能不需要实现
+}
+
+void TwoWire::onReceive(void (*function)(int)) {
+    m_receive_handler = function;
+}
+
+void TwoWire::onRequest(void (*function)(void)) {
+    m_request_handler = function;
+}
+
+void TwoWire::setWireTimeout(uint32_t timeout, bool reset_on_timeout) {
+    m_timeout = timeout;
+    m_reset_on_timeout = reset_on_timeout;
+}
+
 bool TwoWire::getWireTimeoutFlag() {
-    return timeoutFlag;
+    return m_timeout_flag;
 }
+
 void TwoWire::clearWireTimeoutFlag() {
-    timeoutFlag = false;
+    m_timeout_flag = false;
 }
-void TwoWire::onReceive(std::function<void(int)> handler) {
-    receiveHandler = handler;
-}
-void TwoWire::onRequest(std::function<void()> handler) {
-    requestHandler = handler;
-}
+

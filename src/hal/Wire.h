@@ -1,49 +1,55 @@
 #ifndef __WIRE_H
 #define __WIRE_H
 
-#include <vector>
-#include <functional>
 #include <cstdint>
-#include <cstddef>
+#include <functional>
+#include <vector>
+#include <array>
+#include <optional>
 
 class TwoWire {
 public:
     TwoWire();
     ~TwoWire();
-    // 基本I2C操作
-    void begin();
-    void end();
-    void beginTransmission(int address);
-    uint8_t endTransmission(bool sendStop = true);
-    uint8_t requestFrom(int address, int quantity, bool sendStop = true);
 
-    // 数据读写
+    // 禁止拷贝和移动
+    TwoWire(const TwoWire&) = delete;
+    TwoWire& operator=(const TwoWire&) = delete;
+    TwoWire(TwoWire&&) = delete;
+    TwoWire& operator=(TwoWire&&) = delete;
+
+    void begin();
+    void begin(uint8_t address);
+    void end();
+    uint8_t requestFrom(uint8_t address, uint8_t quantity, bool stop = true);
+    void beginTransmission(uint8_t address);
+    uint8_t endTransmission(bool stop = true);
     size_t write(uint8_t data);
     size_t write(const uint8_t* data, size_t quantity);
     int available();
     int read();
-
-    // 时钟和超时设置
-    void setClock(uint32_t frequency);
-    void setWireTimeout(uint32_t timeout = 25000, bool reset_with_timeout = false);
+    void setClock(uint32_t clock);
+    void onReceive(void (*function)(int));
+    void onRequest(void (*function)(void));
+    void setWireTimeout(uint32_t timeout = 25000, bool reset_on_timeout = false);
     bool getWireTimeoutFlag();
     void clearWireTimeoutFlag();
 
-    // 回调函数设置
-    void onReceive(std::function<void(int)> handler);
-    void onRequest(std::function<void()> handler);
 private:
-    int fd;                     // I2C设备文件描述符
-    int currentAddress;         // 当前I2C设备地址
-    std::vector<uint8_t> txBuffer;  // 发送缓冲区
-    std::vector<uint8_t> rxBuffer;  // 接收缓冲区
-    size_t rxIndex;            // 接收缓冲区当前读取位置
+    static constexpr size_t BUFFER_SIZE = 32;  // 固定缓冲区大小
 
-    unsigned long timeout;      // 超时时间设置
-    bool timeoutFlag;          // 超时标志
-
-    std::function<void(int)> receiveHandler;    // 接收回调函数
-    std::function<void()> requestHandler;       // 请求回调函数
+    int m_fd;
+    uint8_t m_address;
+    std::array<uint8_t, BUFFER_SIZE> m_tx_buffer;
+    size_t m_tx_buffer_index;
+    std::array<uint8_t, BUFFER_SIZE> m_rx_buffer;
+    size_t m_rx_buffer_index;
+    size_t m_rx_buffer_length;
+    std::function<void(int)> m_receive_handler;
+    std::function<void()> m_request_handler;
+    uint32_t m_timeout;
+    bool m_reset_on_timeout;
+    bool m_timeout_flag;
 };
 
 extern TwoWire Wire;

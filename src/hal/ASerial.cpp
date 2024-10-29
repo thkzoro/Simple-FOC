@@ -18,7 +18,7 @@ ASerialPort::~ASerialPort() {
 }
 bool ASerialPort::begin(unsigned long baud) {
     // 打开串口设备
-    fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
+    fd = open("/dev/ttyS1", O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd < 0) {
         return false;
     }

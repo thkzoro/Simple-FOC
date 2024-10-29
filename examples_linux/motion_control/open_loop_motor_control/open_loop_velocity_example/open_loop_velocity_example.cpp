@@ -4,7 +4,7 @@
 
 // BLDC motor & driver instance
 // BLDCMotor motor = BLDCMotor(pole pair number);
-BLDCMotor motor = BLDCMotor(7);
+BLDCMotor motor = BLDCMotor(7, 5.1, 220, 0.0028);
 // BLDCDriver3PWM driver = BLDCDriver3PWM(pwmA, pwmB, pwmC, Enable(optional));
 BLDCDriver3PWM driver = BLDCDriver3PWM(0, 1, 7, 22);
 

@@ -16,12 +16,12 @@ MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
 // MagneticSensorAnalog sensor = MagneticSensorAnalog(A1, 14, 1020);
 
 // Motor instance
-BLDCMotor motor = BLDCMotor(7);
+BLDCMotor motor = BLDCMotor(7, 5.1, 220, 0.0028);
 BLDCDriver3PWM driver = BLDCDriver3PWM(0, 1, 7, 22);
 
 
 // angle set point variable
-float target_angle = 3.14;
+float target_angle = 0;
 // instantiate the commander
 Commander command = Commander(Serial);
 void doTarget(char* cmd) { command.scalar(&target_angle, cmd); }
@@ -47,7 +47,7 @@ void setup() {
   motor.linkDriver(&driver);
 
   // choose FOC modulation (optional)
-  motor.foc_modulation = FOCModulationType::SpaceVectorPWM;
+  motor.foc_modulation = FOCModulationType::SinePWM;
 
   // set motion control loop to be used
   motor.controller = MotionControlType::angle;
@@ -56,7 +56,7 @@ void setup() {
   // default parameters in defaults.h
 
   // velocity PI controller parameters
-  motor.PID_velocity.P = 0.2f;
+  motor.PID_velocity.P = 0.133f;
   motor.PID_velocity.I = 20;
   motor.PID_velocity.D = 0.001;
   // maximal voltage to be set to the motor
@@ -67,12 +67,12 @@ void setup() {
   motor.LPF_velocity.Tf = 0.01f;
 
   // angle P controller
-  motor.P_angle.P = 20;
+  motor.P_angle.P = 0.133f;
   motor.P_angle.I = 0.1;
   motor.P_angle.D = 0.001;
   motor.LPF_angle.Tf = 0.01f;
     // maximal velocity of the position control
-  motor.velocity_limit = 40;
+  motor.velocity_limit = 20;
 
   // comment out if not needed
   motor.useMonitoring(Serial);
